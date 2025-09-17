@@ -3,6 +3,9 @@
 
 #include <QQueue>
 #include <QThreadPool>
+#include <QTextStream>
+
+#include <cstdio>
 
 #include "mytask.h"
 
@@ -16,12 +19,30 @@ MainWindow::MainWindow(QWidget *parent)
     m_buttonStop = new QPushButton("Stop", this);
     m_progressBar = new QProgressBar(this);
 
+    m_list = new QList<uint>();
+
     ui->gridLayout->addWidget(m_buttonStart);
     ui->gridLayout->addWidget(m_buttonStop);
     ui->gridLayout->addWidget(m_progressBar);
 
     connect(m_buttonStart, &QPushButton::clicked, this, &MainWindow::handleClickedStart);
+    connect(m_progressBar, &QProgressBar::valueChanged, this, [&](int value){
+        auto s{m_list->size()};
+        if (s)
+        {
+            QString str;
+            str.append(QString("[%1]").arg(m_list->size()));
+            str.append("{");
+            foreach (const uint &item, *m_list)
+            {
+                str.append(" ");
+                str.append(QString::number(item));
+            }
+            str.append(" }");
+            qDebug() << str;
+        }
 
+    });
 }
 
 MainWindow::~MainWindow()
@@ -31,8 +52,9 @@ MainWindow::~MainWindow()
 
 void MainWindow::handleClickedStart()
 {
+    m_list->clear();
     QQueue<MyTask *> myTasks;
-    const int n{10};
+    const int n{15};
     m_progressBar->setMinimum(0);
     m_progressBar->setMaximum(n);
     m_progressBar->setValue(0);
@@ -43,6 +65,7 @@ void MainWindow::handleClickedStart()
         myTask->setAutoDelete(true);
     }
     QThreadPool *threadPool = QThreadPool::globalInstance();
+    threadPool->setMaxThreadCount(QThread::idealThreadCount());
     for (const auto &item : myTasks)
     {
         MyTask *newTask = myTasks.dequeue();
@@ -50,7 +73,7 @@ void MainWindow::handleClickedStart()
         connect(newTask, &MyTask::finished, this, [&](uint c){
             auto v{m_progressBar->value()};
             m_progressBar->setValue(++v);
-            qDebug() << "Finished" << c;
+            m_list->push_back(c);
         }, Qt::QueuedConnection);
         connect(m_buttonStop, &QPushButton::clicked, newTask, &MyTask::stop, Qt::QueuedConnection);
     }

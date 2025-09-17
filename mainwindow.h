@@ -5,6 +5,7 @@
 #include <QPushButton>
 #include <QObject>
 #include <QProgressBar>
+#include <QList>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -24,6 +25,8 @@ private:
     QPushButton *m_buttonStop;
 
     QProgressBar *m_progressBar;
+
+    QList<uint> *m_list;
 private slots:
     void handleClickedStart();
     void handleClickedStop();

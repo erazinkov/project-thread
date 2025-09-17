@@ -2,6 +2,7 @@
 
 #include <QThread>
 #include <QRandomGenerator>
+#include <QDebug>
 
 MyTask::MyTask() : m_stop{false}
 {
@@ -10,7 +11,6 @@ MyTask::MyTask() : m_stop{false}
 
 void MyTask::run()
 {
-    m_stop = false;
     uint c{0};
     QRandomGenerator rG;
     auto r = QRandomGenerator::global()->generate() % 1000;
