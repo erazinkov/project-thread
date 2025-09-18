@@ -5,13 +5,14 @@
 #include <QRunnable>
 #include <QMutex>
 
-class MyTask : public QObject, public QRunnable
+class MyTask : public QObject
 {
     Q_OBJECT
 public:
     MyTask();
+    void doWork();
+    uint count() const;
 
-    void run() override;
 signals:
     void finished(uint c);
 public slots:
@@ -19,6 +20,7 @@ public slots:
 private:
     QMutex m_mutex;
     bool m_stop;
+    uint m_count;
 };
 
 #endif // MYTASK_H

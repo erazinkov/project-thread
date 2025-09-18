@@ -6,6 +6,9 @@
 #include <QObject>
 #include <QProgressBar>
 #include <QList>
+#include <QFutureWatcher>
+
+#include "mytask.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -27,6 +30,9 @@ private:
     QProgressBar *m_progressBar;
 
     QList<uint> *m_list;
+    QFutureWatcher<void> *m_fW;
+    QList<MyTask *> m_myTasks;
+
 private slots:
     void handleClickedStart();
     void handleClickedStop();

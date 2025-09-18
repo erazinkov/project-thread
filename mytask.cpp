@@ -4,14 +4,13 @@
 #include <QRandomGenerator>
 #include <QDebug>
 
-MyTask::MyTask() : m_stop{false}
+MyTask::MyTask() : m_stop{false}, m_count{0}
 {
 
 }
 
-void MyTask::run()
+void MyTask::doWork()
 {
-    uint c{0};
     QRandomGenerator rG;
     auto r = QRandomGenerator::global()->generate() % 1000;
     for (uint i{0}; i < 10; ++i)
@@ -24,13 +23,18 @@ void MyTask::run()
             }
         }
         QThread::currentThread()->msleep(r);
-        c++;
+        m_count++;
     }
-    emit(finished(c));
+    emit(finished(m_count));
 }
 
 void MyTask::stop()
 {
     QMutexLocker<QMutex> locker(&m_mutex);
     m_stop = true;
+}
+
+uint MyTask::count() const
+{
+    return m_count;
 }
