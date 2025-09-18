@@ -12,8 +12,8 @@ MyTask::MyTask() : m_stop{false}, m_count{0}
 void MyTask::doWork()
 {
     QRandomGenerator rG;
-    auto r = QRandomGenerator::global()->generate() % 1000;
-    for (uint i{0}; i < 10; ++i)
+    auto r = QRandomGenerator::global()->generate() % 1'000;
+    for (uint i{0}; i < 1'000'000'000; ++i)
     {
         {
             QMutexLocker<QMutex> locker(&m_mutex);
@@ -22,9 +22,10 @@ void MyTask::doWork()
                 break;
             }
         }
-        QThread::currentThread()->msleep(r);
+        // QThread::currentThread()->msleep(r);
         m_count++;
     }
+    qDebug() << QThread::currentThreadId() << m_count;
     emit(finished(m_count));
 }
 
