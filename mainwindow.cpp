@@ -28,37 +28,13 @@ MainWindow::MainWindow(QWidget *parent)
     ui->gridLayout->addWidget(m_progressBar);
 
     connect(m_buttonStart, &QPushButton::clicked, this, &MainWindow::handleClickedStart);
-    // connect(m_fW, &QFutureWatcher<void>::progressRangeChanged, m_progressBar, &QProgressBar::setRange);
-    // connect(m_fW, &QFutureWatcher<void>::progressValueChanged, m_progressBar, &QProgressBar::setValue);
+    connect(m_fW, &QFutureWatcher<void>::progressRangeChanged, m_progressBar, &QProgressBar::setRange);
+    connect(m_fW, &QFutureWatcher<void>::progressValueChanged, m_progressBar, &QProgressBar::setValue);
     connect(m_fW, &QFutureWatcher<void>::finished, this, [&](){
-        qDebug() << "Finished";
+        qDebug() << "Finished" << m_myTasks;
     });
     connect(m_buttonStop, &QPushButton::clicked, m_fW, &QFutureWatcher<void>::cancel);
-   // connect(m_fW, &QFutureWatcher<void>::progressRangeChanged, [&](int min, int max){
-   //     m_progressBar->setRange(min, max);
-   //     qDebug() << min << max;
-   // });
-   //  connect(m_fW, &QFutureWatcher<void>::progressValueChanged, [&](int v){
-   //      qDebug() << v;
-   //     m_progressBar->setValue(v);
-   //  });
-//    connect(m_fW, &QFutureWatcher<void>::progressValueChanged, m_progressBar, &QProgressBar::setValue);
-//    connect(m_progressBar, &QProgressBar::valueChanged, this, [&](int value){
-//        auto s{m_list->size()};
-//        if (s)
-//        {
-//            QString str;
-//            str.append(QString("[%1]").arg(m_list->size()));
-//            str.append("{");
-//            foreach (const uint &item, *m_list)
-//            {
-//                str.append(" ");
-//                str.append(QString::number(item));
-//            }
-//            str.append(" }");
-//            qDebug() << str;
-//        }
-//    });
+
     qDebug() << QThread::currentThreadId();
 }
 
@@ -69,28 +45,15 @@ MainWindow::~MainWindow()
 
 void MainWindow::handleClickedStart()
 {
+    m_fW->cancel();
     m_myTasks.clear();
-//    QList<MyTask *> myTasks;
-    const int n{15};
-   // m_progressBar->setMinimum(0);
-   // m_progressBar->setMaximum(n);
-   // m_progressBar->setValue(0);
+    const int n{25};
     for (auto i{0}; i < n; ++i)
     {
         MyTask *myTask = new MyTask();
         m_myTasks.push_back(myTask);
         connect(m_buttonStop, &QPushButton::clicked, myTask, &MyTask::stop);
     }
-//    auto process = [](int val) {
-//        return val * 2;
-//    };
-//    QList<int> inputs { 1, 2, 3 };
-//    auto goodFuture = QtConcurrent::mapped(inputs, process)
-//                              .then([](QFuture<int> f) {
-//                                  for (auto r : f.results()) {
-//                                      qDebug() << r;
-//                                  }
-//                              });
 //    QFutureWatcher<void> *watcher = new QFutureWatcher<void>(this);
    // auto future = QtConcurrent::mapped(m_myTasks, [](MyTask *myTask) {
    //         myTask->doWork();
@@ -100,46 +63,23 @@ void MainWindow::handleClickedStart()
    //         qDebug() << r->count();
    //     }
    // });
-    auto future = QtConcurrent::map(m_myTasks, [](MyTask *myTask) {
-            myTask->doWork();
-        });
+//    auto future = QtConcurrent::mapped(m_myTasks, [](MyTask *myTask) {
+//            myTask->doWork();
+//            return myTask;
+//    }).then([](QFuture<MyTask *> f) {
+//        QList<uint> l;
+//        for (auto r : f.results()) {
+//            l.push_back(r->count());
+//        }
+//        return l;
+//    });
+
+    auto p = [](MyTask *myTask){
+        myTask->doWork();
+    };
+
+    auto future = QtConcurrent::map(m_myTasks, p);
     m_fW->setFuture(future);
-
-//    auto myTask = [&](){
-//        QThread::currentThread()->msleep(5'000);
-//        uint c{50};
-//        m_list->push_back(c);
-//        m_progressBar->setValue(c);
-//    };
-//    QFuture future = QtConcurrent::task(std::move(myTask)).spawn();
-
-//    m_list->clear();
-//    QQueue<MyTask *> myTasks;
-//    const int n{32};
-//    m_progressBar->setMinimum(0);
-//    m_progressBar->setMaximum(n);
-//    m_progressBar->setValue(0);
-//    for (auto i{0}; i < n; ++i)
-//    {
-//        MyTask *myTask = new MyTask();
-//        myTasks.enqueue(myTask);
-//        myTask->setAutoDelete(true);
-
-//    }
-//    QThreadPool *threadPool = QThreadPool::globalInstance();
-//    qDebug() << QThread::idealThreadCount();
-//    threadPool->setMaxThreadCount(QThread::idealThreadCount());
-//    for (const auto &item: myTasks)
-//    {
-//        MyTask *newTask = myTasks.dequeue();
-//        threadPool->start(newTask);
-//        connect(newTask, &MyTask::finished, this, [&](uint c){
-//            auto v{m_progressBar->value()};
-//            m_progressBar->setValue(++v);
-//            m_list->push_back(c);
-//        }, Qt::QueuedConnection);
-//        connect(m_buttonStop, &QPushButton::clicked, newTask, &MyTask::stop);
-//    }
 }
 
 void MainWindow::handleClickedStop()
