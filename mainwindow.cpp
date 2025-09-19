@@ -31,7 +31,17 @@ MainWindow::MainWindow(QWidget *parent)
     connect(m_fW, &QFutureWatcher<void>::progressRangeChanged, m_progressBar, &QProgressBar::setRange);
     connect(m_fW, &QFutureWatcher<void>::progressValueChanged, m_progressBar, &QProgressBar::setValue);
     connect(m_fW, &QFutureWatcher<void>::finished, this, [&](){
-        qDebug() << "Finished" << m_myTasks;
+        qDebug() << "Finished" << m_myTasks.size();
+        m_list->clear();
+        foreach (const auto t, m_myTasks)
+        {
+            m_list->push_back(t->count());
+        }
+        qDebug() << m_list->size();
+        for (const auto &item : *m_list)
+        {
+            qDebug() << item;
+        }
     });
     connect(m_buttonStop, &QPushButton::clicked, m_fW, &QFutureWatcher<void>::cancel);
 
@@ -47,22 +57,13 @@ void MainWindow::handleClickedStart()
 {
     m_fW->cancel();
     m_myTasks.clear();
-    const int n{25};
+    const int n{10};
     for (auto i{0}; i < n; ++i)
     {
         MyTask *myTask = new MyTask();
         m_myTasks.push_back(myTask);
         connect(m_buttonStop, &QPushButton::clicked, myTask, &MyTask::stop);
     }
-//    QFutureWatcher<void> *watcher = new QFutureWatcher<void>(this);
-   // auto future = QtConcurrent::mapped(m_myTasks, [](MyTask *myTask) {
-   //         myTask->doWork();
-   //         return myTask;
-   //     }).then([](QFuture<MyTask *> f) {
-   //     for (auto r : f.results()) {
-   //         qDebug() << r->count();
-   //     }
-   // });
 //    auto future = QtConcurrent::mapped(m_myTasks, [](MyTask *myTask) {
 //            myTask->doWork();
 //            return myTask;
