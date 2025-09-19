@@ -31,16 +31,25 @@ MainWindow::MainWindow(QWidget *parent)
     connect(m_fW, &QFutureWatcher<void>::progressRangeChanged, m_progressBar, &QProgressBar::setRange);
     connect(m_fW, &QFutureWatcher<void>::progressValueChanged, m_progressBar, &QProgressBar::setValue);
     connect(m_fW, &QFutureWatcher<void>::finished, this, [&](){
-        qDebug() << "Finished" << m_myTasks.size();
+        qDebug() << "Finished";
         m_list->clear();
         foreach (const auto t, m_myTasks)
         {
             m_list->push_back(t->count());
         }
-        qDebug() << m_list->size();
-        for (const auto &item : *m_list)
+        auto s{m_list->size()};
+        if (s)
         {
-            qDebug() << item;
+            QString str;
+            str.append(QString("[%1]").arg(m_list->size()));
+            str.append("{");
+            foreach (const uint &item, *m_list)
+            {
+                str.append(" ");
+                str.append(QString::number(item));
+            }
+            str.append(" }");
+            qDebug() << str;
         }
     });
     connect(m_buttonStop, &QPushButton::clicked, m_fW, &QFutureWatcher<void>::cancel);
@@ -57,7 +66,7 @@ void MainWindow::handleClickedStart()
 {
     m_fW->cancel();
     m_myTasks.clear();
-    const int n{10};
+    const int n{25};
     for (auto i{0}; i < n; ++i)
     {
         MyTask *myTask = new MyTask();
