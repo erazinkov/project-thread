@@ -32,6 +32,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(m_fW, &QFutureWatcher<void>::progressValueChanged, m_progressBar, &QProgressBar::setValue);
     connect(m_fW, &QFutureWatcher<void>::finished, this, [&](){
         qDebug() << "Finished";
+        qDeleteAll(m_myTasks);
+        m_myTasks.clear();
         // m_list->clear();
         // foreach (const auto t, m_myTasks)
         // {
@@ -65,10 +67,7 @@ MainWindow::~MainWindow()
 void MainWindow::handleClickedStart()
 {
     m_fW->cancel();
-    qDeleteAll(m_myTasks);
-    m_myTasks.clear();
     const int n{10};
-
     for (auto i{0}; i < n; ++i)
     {
         MyTask *myTask = new MyTask();
@@ -87,7 +86,7 @@ void MainWindow::handleClickedStart()
 //        return l;
 //    });
 
-    auto future = QtConcurrent::map(m_myTasks, [](MyTask *item) {
+    auto future = QtConcurrent::map(m_myTasks, [](MyTask *item){
         item->doWork();
     });
 

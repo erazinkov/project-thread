@@ -18,6 +18,11 @@ void MyTask::doWork()
 {
     QRandomGenerator rG;
     auto r = QRandomGenerator::global()->generate() % 100;
+    // if (r > 75)
+    // {
+    //     qDebug() << r;
+    //     throw std::runtime_error("Haste makes waste!");
+    // }
     for (uint i{0}; i < 10; ++i)
     {
         {
