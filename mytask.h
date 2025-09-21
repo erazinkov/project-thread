@@ -10,6 +10,7 @@ class MyTask : public QObject
     Q_OBJECT
 public:
     MyTask();
+    ~MyTask() override;
     void doWork();
     uint count() const;
 

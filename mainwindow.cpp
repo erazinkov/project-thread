@@ -32,25 +32,25 @@ MainWindow::MainWindow(QWidget *parent)
     connect(m_fW, &QFutureWatcher<void>::progressValueChanged, m_progressBar, &QProgressBar::setValue);
     connect(m_fW, &QFutureWatcher<void>::finished, this, [&](){
         qDebug() << "Finished";
-        m_list->clear();
-        foreach (const auto t, m_myTasks)
-        {
-            m_list->push_back(t->count());
-        }
-        auto s{m_list->size()};
-        if (s)
-        {
-            QString str;
-            str.append(QString("[%1]").arg(m_list->size()));
-            str.append("{");
-            foreach (const uint &item, *m_list)
-            {
-                str.append(" ");
-                str.append(QString::number(item));
-            }
-            str.append(" }");
-            qDebug() << str;
-        }
+        // m_list->clear();
+        // foreach (const auto t, m_myTasks)
+        // {
+        //     m_list->push_back(t->count());
+        // }
+        // auto s{m_list->size()};
+        // if (s)
+        // {
+        //     QString str;
+        //     str.append(QString("[%1]").arg(m_list->size()));
+        //     str.append("{");
+        //     foreach (const uint &item, *m_list)
+        //     {
+        //         str.append(" ");
+        //         str.append(QString::number(item));
+        //     }
+        //     str.append(" }");
+        //     qDebug() << str;
+        // }
     });
     connect(m_buttonStop, &QPushButton::clicked, m_fW, &QFutureWatcher<void>::cancel);
 
@@ -65,14 +65,17 @@ MainWindow::~MainWindow()
 void MainWindow::handleClickedStart()
 {
     m_fW->cancel();
+    qDeleteAll(m_myTasks);
     m_myTasks.clear();
-    const int n{25};
+    const int n{10};
+
     for (auto i{0}; i < n; ++i)
     {
         MyTask *myTask = new MyTask();
         m_myTasks.push_back(myTask);
         connect(m_buttonStop, &QPushButton::clicked, myTask, &MyTask::stop);
     }
+
 //    auto future = QtConcurrent::mapped(m_myTasks, [](MyTask *myTask) {
 //            myTask->doWork();
 //            return myTask;
@@ -84,11 +87,10 @@ void MainWindow::handleClickedStart()
 //        return l;
 //    });
 
-    auto p = [](MyTask *myTask){
-        myTask->doWork();
-    };
+    auto future = QtConcurrent::map(m_myTasks, [](MyTask *item) {
+        item->doWork();
+    });
 
-    auto future = QtConcurrent::map(m_myTasks, p);
     m_fW->setFuture(future);
 }
 
