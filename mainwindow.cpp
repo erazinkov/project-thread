@@ -32,27 +32,27 @@ MainWindow::MainWindow(QWidget *parent)
     connect(m_fW, &QFutureWatcher<void>::progressValueChanged, m_progressBar, &QProgressBar::setValue);
     connect(m_fW, &QFutureWatcher<void>::finished, this, [&](){
         qDebug() << "Finished";
+        m_list->clear();
+        foreach (const auto t, m_myTasks)
+        {
+            m_list->push_back(t->count());
+        }
+        auto s{m_list->size()};
+        if (s)
+        {
+            QString str;
+            str.append(QString("[%1]").arg(m_list->size()));
+            str.append("{");
+            foreach (const uint &item, *m_list)
+            {
+                str.append(" ");
+                str.append(QString::number(item));
+            }
+            str.append(" }");
+            qDebug() << str;
+        }
         qDeleteAll(m_myTasks);
         m_myTasks.clear();
-        // m_list->clear();
-        // foreach (const auto t, m_myTasks)
-        // {
-        //     m_list->push_back(t->count());
-        // }
-        // auto s{m_list->size()};
-        // if (s)
-        // {
-        //     QString str;
-        //     str.append(QString("[%1]").arg(m_list->size()));
-        //     str.append("{");
-        //     foreach (const uint &item, *m_list)
-        //     {
-        //         str.append(" ");
-        //         str.append(QString::number(item));
-        //     }
-        //     str.append(" }");
-        //     qDebug() << str;
-        // }
     });
     connect(m_buttonStop, &QPushButton::clicked, m_fW, &QFutureWatcher<void>::cancel);
 
@@ -66,6 +66,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::handleClickedStart()
 {
+    qDebug() << "----------------------------------------";
     m_fW->cancel();
     const int n{10};
     for (auto i{0}; i < n; ++i)
@@ -86,10 +87,15 @@ void MainWindow::handleClickedStart()
 //        return l;
 //    });
 
-    auto future = QtConcurrent::map(m_myTasks, [](MyTask *item){
-        item->doWork();
-    });
+    auto future = QtConcurrent::map(m_myTasks,
+    [](MyTask *item){
+        try {
+            item->doWork();
+        }  catch (const std::exception &e) {
+                qDebug() << e.what();
+        }
 
+    });
     m_fW->setFuture(future);
 }
 
